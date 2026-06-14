@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  color: #3D5166;
+  background: #F5F8FC;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body { background: #0f172a; color: #e2e8f0; }
+
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+.page-container {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: env(safe-area-inset-top);
+}
+
+button, a, .clickable { min-height: 44px; min-width: 44px; }
+* { -webkit-tap-highlight-color: transparent; }
+
+:focus-visible { outline: 2px solid #1B4F8A; outline-offset: 2px; border-radius: 4px; }
+:is(a, button, input, textarea, select, [tabindex]):focus:not(:focus-visible) { outline: none; }
+:is(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #1B4F8A; outline-offset: 2px; border-radius: 4px;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #F5F8FC; }
+::-webkit-scrollbar-thumb { background: #C5D3E0; border-radius: 4px; }
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+.filter-bar {
+  display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px;
+  padding: 0 4px 8px; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-bar > * { flex-shrink: 0; }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding-bottom: env(safe-area-inset-bottom); z-index: 40;
+}
+
+@keyframes msg-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-enter { animation: msg-slide-up 0.3s ease-out both; }
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#1B4F8A] hover:bg-[#154070] text-white font-medium py-2.5 px-6 rounded-lg
+           transition-all duration-200 active:scale-[0.97]
+           dark:bg-blue-600 dark:hover:bg-blue-500;
+  }
+  .btn-secondary {
+    @apply bg-white border border-[#C5D3E0] text-[#4B6080] font-medium py-2.5 px-6 rounded-lg
+           hover:bg-gray-50 transition-all duration-200 active:scale-[0.97]
+           dark:bg-slate-800 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700;
+  }
+  .card {
+    @apply bg-white border border-[#DDE5EE] rounded-xl p-4 sm:p-6 shadow-sm
+           transition-all duration-200 ease-out
+           hover:border-[#C5D3E0] hover:shadow-md hover:-translate-y-0.5
+           dark:bg-slate-900 dark:border-slate-700 dark:hover:border-slate-600;
+  }
+  .badge-category {
+    @apply text-xs font-semibold px-2.5 py-0.5 rounded-full;
+  }
+}
