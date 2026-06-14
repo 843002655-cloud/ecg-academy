@@ -3,11 +3,12 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { caseSchema, formatZodErrors } from "@/lib/validators";
+import { getDisplayCategory } from "@/lib/case-utils";
 
 const PRODUCT = "ecg-academy";
 
 // GET /api/cases — list cases (public: published only; admin: all)
-// Filters by product="ecg-academy" (Plan B shared backend)
+// Filters by content_json->>product="ecg-academy" (Plan B shared backend)
 export async function GET(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
   const { allowed } = checkRateLimit(ip);
@@ -25,17 +26,20 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (!admin) query = query.eq("is_published", true);
-  if (category) query = query.eq("category", category);
+  // 真实分类存在 content_json.display_category，DB category 列固定为 SVT
+  if (category) query = query.eq("content_json->>display_category", category);
   if (difficulty) query = query.eq("difficulty", difficulty);
 
   const { data } = await query;
 
-  // 去重：同 title 只保留最早创建的
+  // 去重 + 替换 category 为真实 display_category
   const seen = new Map<string, unknown>();
   if (data) {
     for (const row of data as Record<string, unknown>[]) {
       const key = row.title as string;
       if (!seen.has(key) || new Date(row.created_at as string) < new Date((seen.get(key) as Record<string, unknown>)?.created_at as string)) {
+        // 用 display_category 替换 category 返回给前端
+        (row as Record<string, unknown>).category = getDisplayCategory(row);
         seen.set(key, row);
       }
     }
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "需要管理员权限" }, { status: 403 });
     }
     const body = await request.json();
-    const parsed = caseSchema.safeParse({ ...body, product: PRODUCT });
+    const parsed = caseSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "数据格式错误", details: formatZodErrors(parsed.error) }, { status: 400 });
     }
