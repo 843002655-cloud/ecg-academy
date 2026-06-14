@@ -299,7 +299,7 @@ export async function POST(request: NextRequest) {
 
         const { error, data } = await supabaseAdmin
           .from("cases")
-          .insert({ ...parsed_data.data, product: PRODUCT })
+          .insert(parsed_data.data)
           .select("id, title, category")
           .single();
 

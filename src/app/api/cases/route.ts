@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   let query = supabaseAdmin
     .from("cases")
     .select("*")
-    .eq("product", PRODUCT)
+    .eq("content_json->>product", PRODUCT)
     .order("created_at", { ascending: false });
 
   if (!admin) query = query.eq("is_published", true);

@@ -17,7 +17,6 @@ export function flattenCase(
     key_points: (c.key_points as string[]) || [],
     is_published: false,
     mapping_system: (c.mapping_system as string) || "",
-    content_json: { ...c, ...extra } as Record<string, unknown>,
-    product: "ecg-academy",
+    content_json: { ...c, ...extra, product: "ecg-academy" } as Record<string, unknown>,
   };
 }

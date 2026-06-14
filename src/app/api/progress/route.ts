@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     .from("cases")
     .select("*", { count: "exact", head: true })
     .eq("is_published", true)
-    .eq("product", PRODUCT);
+    .eq("content_json->>product", PRODUCT);
 
   return NextResponse.json({ progress: data || [], totalCases: count || 0 });
 }
