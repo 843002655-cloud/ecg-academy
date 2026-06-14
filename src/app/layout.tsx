@@ -17,7 +17,6 @@ export const metadata: Metadata = {
     siteName: "心电学堂",
     title: "心电学堂 — AI心电图判读教学平台",
     description: "AI导师像高年资医生一样，一句一句追问，带你学会读每一份心电图",
-    images: [{ url: `${siteUrl}/icon.png`, width: 1200, height: 630 }],
   },
   icons: {
     icon: "/favicon.svg",
