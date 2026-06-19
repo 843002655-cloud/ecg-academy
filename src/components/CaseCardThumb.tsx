@@ -1,12 +1,12 @@
 interface Props { category: string; }
 const ECG_POINTS = "0,40 20,40 30,40 35,8 40,40 45,40 55,40 65,40 70,32 75,40 80,40 90,40 100,40 105,12 110,40 115,40 125,40 135,40 140,32 145,40 150,40 160,40 170,40 175,8 180,40 185,40 195,40 205,40 210,20 215,40 220,40 230,40 240,40 245,12 250,40 255,40 265,40 275,40 280,32 285,40 300,40";
 const catStyles: Record<string, { bg: string; stroke: string; darkBg: string; darkStroke: string }> = {
-  SVT: { bg: "#EBF2FA", stroke: "#1B4F8A", darkBg: "#1e3a5f", darkStroke: "#60a5fa" },
+  SVT: { bg: "#E8F5F0", stroke: "#2D8C6A", darkBg: "#1e3a5f", darkStroke: "#60a5fa" },
   VT:  { bg: "#FDE8E8", stroke: "#9B2C2C", darkBg: "#3b1a1a", darkStroke: "#f87171" },
   AF:  { bg: "#FEF3E2", stroke: "#854F0B", darkBg: "#3b2a15", darkStroke: "#fbbf24" },
   "正常心电图": { bg: "#E8F4F0", stroke: "#0F6E56", darkBg: "#0f2a24", darkStroke: "#34d399" },
   "心腔肥大": { bg: "#FDE8E8", stroke: "#9B2C2C", darkBg: "#3b1a1a", darkStroke: "#f87171" },
-  "束支阻滞": { bg: "#EBF2FA", stroke: "#1B4F8A", darkBg: "#1e3a5f", darkStroke: "#60a5fa" },
+  "束支阻滞": { bg: "#E8F5F0", stroke: "#2D8C6A", darkBg: "#1e3a5f", darkStroke: "#60a5fa" },
   "心肌缺血": { bg: "#FDE8E8", stroke: "#B91C1C", darkBg: "#3b1515", darkStroke: "#ef4444" },
   "ST-T改变": { bg: "#FEF3E2", stroke: "#854F0B", darkBg: "#3b2a15", darkStroke: "#fbbf24" },
   "电解质异常": { bg: "#EDE9FE", stroke: "#5B21B6", darkBg: "#1e1240", darkStroke: "#a78bfa" },

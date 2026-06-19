@@ -13,7 +13,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.dark body { background: #0f172a; color: #e2e8f0; }
+.dark body { background: #1B1B1F; color: #D4D4D8; }
 
 *, *::before, *::after {
   transition-property: background-color, border-color, color;
@@ -29,10 +29,10 @@ body {
 button, a, .clickable { min-height: 44px; min-width: 44px; }
 * { -webkit-tap-highlight-color: transparent; }
 
-:focus-visible { outline: 2px solid #1B4F8A; outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 2px solid #2D8C6A; outline-offset: 2px; border-radius: 4px; }
 :is(a, button, input, textarea, select, [tabindex]):focus:not(:focus-visible) { outline: none; }
 :is(a, button, input, textarea, select, [tabindex]):focus-visible {
-  outline: 2px solid #1B4F8A; outline-offset: 2px; border-radius: 4px;
+  outline: 2px solid #2D8C6A; outline-offset: 2px; border-radius: 4px;
 }
 
 ::-webkit-scrollbar { width: 8px; }
@@ -62,9 +62,9 @@ button, a, .clickable { min-height: 44px; min-width: 44px; }
 
 @layer components {
   .btn-primary {
-    @apply bg-[#1B4F8A] hover:bg-[#154070] text-white font-medium py-2.5 px-6 rounded-lg
+    @apply bg-[#2D8C6A] hover:bg-[#1A6B4F] text-white font-medium py-2.5 px-6 rounded-lg
            transition-all duration-200 active:scale-[0.97]
-           dark:bg-blue-600 dark:hover:bg-blue-500;
+           dark:bg-emerald-600 dark:hover:bg-emerald-500;
   }
   .btn-secondary {
     @apply bg-white border border-[#C5D3E0] text-[#4B6080] font-medium py-2.5 px-6 rounded-lg

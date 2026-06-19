@@ -52,7 +52,7 @@ function parseInline(text: string): React.ReactNode[] {
       parts.push(<strong key={match.index} className="font-bold">{match[2]}</strong>);
     } else if (match[3]) {
       parts.push(
-        <code key={match.index} className="bg-[#E8ECF0] dark:bg-slate-700 text-[#1B4F8A] dark:text-blue-300 px-1 py-0.5 rounded text-xs font-mono">
+        <code key={match.index} className="bg-[#E8ECF0] dark:bg-slate-700 text-[#2D8C6A] dark:text-emerald-300 px-1 py-0.5 rounded text-xs font-mono">
           {match[4]}
         </code>
       );

@@ -16,7 +16,7 @@ export default function og() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0F2540 0%, #1B4F8A 50%, #1A365D 100%)",
+          background: "linear-gradient(135deg, #0F2540 0%, #2D8C6A 50%, #1A365D 100%)",
           fontFamily: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif',
           padding: 60,
         }}

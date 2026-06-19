@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/api-utils";
 import { caseUpdateSchema, formatZodErrors } from "@/lib/validators";
-import { getDisplayCategory } from "@/lib/case-utils";
+
+export const dynamic = "force-dynamic";
+
+function getDisplayCategory(c: Record<string, unknown> | null | undefined): string {
+  if (!c) return "SVT";
+  const contentJson = c.content_json as Record<string, unknown> | undefined;
+  return (contentJson?.display_category as string) || (c.category as string) || "SVT";
+}
 
 // GET /api/cases/[id] — single case (published only for non-admin)
 export async function GET(

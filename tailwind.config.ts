@@ -7,14 +7,14 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#1B4F8A",
-          dark: "#154070",
-          light: "#60a5fa",
+          DEFAULT: "#2D8C6A",
+          dark: "#1A6B4F",
+          light: "#6EE7B7",
         },
         tier: {
-          basic: "#0F6E56",
-          rhythm: "#854F0B",
-          ep: "#1B4F8A",
+          basic: "#2D8C6A",
+          rhythm: "#B45309",
+          ep: "#2563EB",
         },
       },
       fontFamily: {

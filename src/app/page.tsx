@@ -21,34 +21,34 @@ const aiDemoLines = [
 const features = [
   { icon: "🧠", title: "AI 苏格拉底式教学", desc: "不会直接给答案，而是通过层层追问引导你推导诊断结论——就像高年资医生带教查房。" },
   { icon: "📈", title: "真实心电图判读", desc: "覆盖正常心电图、心梗、心律失常、电解质异常等全部判读场景，AI 逐图讲解。" },
-  { icon: "🏆", title: "三级学习体系", desc: "基础心电图免费学 → 心律失常进阶付费 → EP 电生理专家内容，按你的水平精准匹配。" },
-  { icon: "📱", title: "微信小程序同步", desc: "手机端随时打开即用，每日 ECG 挑战推送，碎片时间刷一个判读题。" },
+  { icon: "🏆", title: "模块化进阶体系", desc: "基础免费学 → 临床判读进阶 → EP 电生理精进，按你的水平精准匹配。" },
+  { icon: "📱", title: "Web + 小程序", desc: "电脑端深度学习、手机端碎片刷题，AI 导师随时在线陪练。" },
 ];
 
 const tiers = [
   {
-    level: "Tier 1", title: "基础心电图", tag: "完全免费",
+    level: "Tier 1", title: "基础入门", tag: "完全免费",
     tagBg: "bg-[#E8F4F0] dark:bg-emerald-900/30", tagText: "text-[#0F6E56] dark:text-emerald-400",
     icon: "📈", color: "border-emerald-500",
     bg: "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40",
-    desc: "P 波分析 · QRS 形态 · ST 段抬高/压低 · T 波异常 · 电轴判断 · 心梗定位 · 电解质异常 · 起搏器心电图",
-    audience: "面向：医学生 · 规培生 · 全科医生 · 护士", cases: 120, price: "¥0",
+    modules: ["正常心电图与变异", "心率与节律判断", "间期测量与电轴", "P-QRS-T 波形基础"],
+    audience: "面向：医学生 · 规培生 · 全科医生 · 护士", price: "¥0",
   },
   {
-    level: "Tier 2", title: "心律失常", tag: "付费进阶",
+    level: "Tier 2", title: "临床判读", tag: "付费进阶",
     tagBg: "bg-[#FEF3E2] dark:bg-amber-900/30", tagText: "text-[#854F0B] dark:text-amber-400",
     icon: "💎", color: "border-amber-500",
     bg: "bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40",
-    desc: "窄 QRS 心动过速 · 宽 QRS 鉴别 · 房颤/房扑 · SVT 机制 · VT 定位 · AV 阻滞 · 束支阻滞 · 预激综合征",
-    audience: "面向：心内科医生 · 急诊科医生 · ICU 医生", cases: 80, price: "¥99/年", highlight: true,
+    modules: ["心肌缺血与梗死定位", "心律失常鉴别诊断", "电解质与药物影响", "束支阻滞与心腔肥大", "急诊心电图陷阱"],
+    audience: "面向：心内科医生 · 急诊科医生 · ICU 医生", price: "¥129/年", highlight: true,
   },
   {
-    level: "Tier 3", title: "EP 电生理", tag: "专家内容",
-    tagBg: "bg-[#EBF2FA] dark:bg-blue-900/30", tagText: "text-[#1B4F8A] dark:text-blue-400",
+    level: "Tier 3", title: "精进提升", tag: "专家内容",
+    tagBg: "bg-[#E8F5F0] dark:bg-emerald-900/30", tagText: "text-[#2D8C6A] dark:text-emerald-400",
     icon: "⚡", color: "border-blue-600",
-    bg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40",
-    desc: "腔内电图解析 · CS 激动顺序 · His 束电位 · 拖带标测 · 基质标测 · 房颤 PVI · 室速消融策略",
-    audience: "面向：EP 专科医生 · 电生理进修生", cases: 120, price: "含会员",
+    bg: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-emerald-950/40 dark:to-indigo-950/40",
+    modules: ["起搏器心电图", "罕见 ECG 表现", "复杂宽 QRS 鉴别", "EP 电生理入门"],
+    audience: "面向：EP 专科医生 · 电生理进修生 · 资深心内科医生", price: "¥199/年",
   },
 ];
 
@@ -60,13 +60,20 @@ const diffBadge: Record<string, string> = {
 
 export default function Home() {
   usePageTitle("首页");
-  const [featuredCases, setFeaturedCases] = useState<{ id: string; title: string; category: string; difficulty: string; description: string }[]>([]);
-  const [allCasesCount, setAllCasesCount] = useState(0);
+  const [featuredCases, setFeaturedCases] = useState<{ id: string; title: string; category: string; difficulty: string; description: string; tier?: number }[]>([]);
+  const [tierCounts, setTierCounts] = useState<Record<number, number>>({});
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     caseService.getCases({ product: "ecg-academy" }).then(({ cases }) => {
-      setFeaturedCases(cases.slice(0, 3));
-      setAllCasesCount(cases.length);
+      setFeaturedCases(cases.slice(0, 3) as typeof featuredCases);
+      setTotalCount(cases.length);
+      const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0 };
+      for (const c of cases) {
+        const tier = (c as { tier?: number }).tier || 2;
+        counts[tier] = (counts[tier] || 0) + 1;
+      }
+      setTierCounts(counts);
     }).catch(() => {});
   }, []);
 
@@ -79,12 +86,12 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#EBF2FA] dark:bg-blue-900/40 text-[#1B4F8A] dark:text-blue-400 tracking-wide">
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#E8F5F0] dark:bg-emerald-900/30 text-[#2D8C6A] dark:text-emerald-400 tracking-wide">
                   AI + 心电图教学
                 </span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1A2332] dark:text-slate-100 mb-3 leading-tight font-serif">
-                <span className="text-[#1B4F8A] dark:text-blue-400">心电</span>学堂
+                <span className="text-[#2D8C6A] dark:text-emerald-400">心电</span>学堂
               </h1>
               <p className="text-xl sm:text-2xl text-[#6B7F96] dark:text-slate-400 mb-2 font-serif">
                 AI 心电图判读教学平台
@@ -93,17 +100,17 @@ export default function Home() {
                 不是题库，不是背书——AI 导师像高年资医生一样，一句一句追问，带你学会读每一份心电图
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <Link href={ROUTES.AUTH_REGISTER} className="bg-[#1B4F8A] dark:bg-blue-600 hover:bg-[#154070] dark:hover:bg-blue-500 text-white font-medium py-3 px-8 rounded-lg transition-colors text-center">
+                <Link href={ROUTES.AUTH_REGISTER} className="bg-[#2D8C6A] dark:bg-emerald-600 hover:bg-[#1A6B4F] dark:hover:bg-emerald-500 text-white font-medium py-3 px-8 rounded-lg transition-colors text-center">
                   免费开始学习
                 </Link>
-                <Link href={ROUTES.CASES} className="border border-[#C5D3E0] dark:border-slate-600 text-[#4B6080] dark:text-slate-300 hover:border-[#1B4F8A] dark:hover:border-blue-400 font-medium py-3 px-8 rounded-lg transition-colors text-center">
+                <Link href={ROUTES.CASES} className="border border-[#C5D3E0] dark:border-slate-600 text-[#4B6080] dark:text-slate-300 hover:border-[#2D8C6A] dark:hover:border-emerald-400 font-medium py-3 px-8 rounded-lg transition-colors text-center">
                   浏览病例库
                 </Link>
               </div>
               <p className="text-sm text-[#8FA0B4] dark:text-slate-500 flex items-center gap-2 flex-wrap">
                 <span>🏥 面向全体临床医生</span>
                 <span className="text-[#C5D3E0] dark:text-slate-600 hidden sm:inline">·</span>
-                <span className="hidden sm:inline">📋 {allCasesCount || ""} 精选病例</span>
+                <span className="hidden sm:inline">📋 {totalCount || ""} 教学病例</span>
                 <span className="text-[#C5D3E0] dark:text-slate-600 hidden sm:inline">·</span>
                 <span className="hidden sm:inline">🆓 基础心电图永久免费</span>
               </p>
@@ -121,29 +128,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ Three-Tier Pyramid ═══ */}
+      {/* ═══ Three-Tier Learning System ═══ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-3xl font-bold text-center text-[#1A2332] dark:text-slate-100 mb-4 font-serif">三层学习体系</h2>
+        <h2 className="text-3xl font-bold text-center text-[#1A2332] dark:text-slate-100 mb-4 font-serif">模块化学习体系</h2>
         <p className="text-center text-[#6B7F96] dark:text-slate-400 mb-12 max-w-xl mx-auto">
-          从 ECG 入门到电生理专家，一站式覆盖全部心电图判读需求
+          从 ECG 入门到电生理专家，病例数持续更新
         </p>
         <div className="grid lg:grid-cols-3 gap-6">
-          {tiers.map((tier) => (
-            <div key={tier.title} className={`relative rounded-2xl border-2 ${tier.color} ${tier.bg} p-6 flex flex-col ${tier.highlight ? "lg:-mt-4 lg:mb-4 shadow-lg shadow-amber-100 dark:shadow-amber-900/20" : ""}`}>
-              {tier.highlight && <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">🔥 推荐</div>}
+          {tiers.map((tier, idx) => {
+            const tierNum = idx + 1;
+            const count = tierCounts[tierNum] || 0;
+            return (
+            <Link
+              key={tier.title}
+              href={`${ROUTES.CASES}?tier=${tierNum}`}
+              className={`relative rounded-2xl border-2 ${tier.color} ${tier.bg} p-6 flex flex-col cursor-pointer transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-xl ${tier.highlight ? "shadow-lg shadow-amber-100 dark:shadow-amber-900/20 hover:shadow-2xl hover:shadow-amber-200 dark:hover:shadow-amber-900/40" : ""}`}
+            >
+              {tier.highlight && <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">🔥 最受欢迎</div>}
               <div className="text-3xl mb-3">{tier.icon}</div>
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-xl font-bold text-[#1A2332] dark:text-slate-100 font-serif">{tier.title}</h3>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tier.tagBg} ${tier.tagText}`}>{tier.tag}</span>
               </div>
-              <p className="text-sm text-[#6B7F96] dark:text-slate-400 mb-3 leading-relaxed">{tier.desc}</p>
+              <ul className="text-sm text-[#3D5166] dark:text-slate-300 mb-3 space-y-1.5">
+                {tier.modules.map((m, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <span className="text-[#0F6E56] dark:text-emerald-400 text-xs">✓</span>
+                    {m}
+                  </li>
+                ))}
+              </ul>
               <p className="text-xs text-[#8FA0B4] dark:text-slate-500 mb-4">{tier.audience}</p>
               <div className="mt-auto pt-4 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between">
-                <span className="text-sm font-bold text-[#1A2332] dark:text-slate-100">{tier.cases} 例</span>
-                <span className="text-lg font-extrabold text-[#1B4F8A] dark:text-blue-400">{tier.price}</span>
+                <span className="text-sm font-bold text-[#1A2332] dark:text-slate-100">{count} 例 · 持续更新</span>
+                <span className="text-lg font-extrabold text-[#2D8C6A] dark:text-emerald-400">{tier.price}</span>
               </div>
-            </div>
-          ))}
+            </Link>
+          )})}
         </div>
       </section>
 
@@ -158,11 +179,25 @@ export default function Home() {
             {features.map((f) => (
               <div key={f.title} className="card group text-center sm:text-left">
                 <div className="text-3xl mb-4">{f.icon}</div>
-                <h3 className="text-lg font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#1B4F8A] dark:group-hover:text-blue-400 transition-colors font-serif">{f.title}</h3>
+                <h3 className="text-lg font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 transition-colors font-serif">{f.title}</h3>
                 <p className="text-sm text-[#6B7F96] dark:text-slate-400 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ═══ Quiz CTA ═══ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="bg-gradient-to-r from-[#E8F5F0] to-[#EDE9FE] dark:from-emerald-950/30 dark:to-purple-950/30 rounded-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-6 border border-[#C5D3E0] dark:border-slate-700">
+          <div className="text-5xl shrink-0">📝</div>
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className="text-xl font-bold text-[#1A2332] dark:text-slate-100 mb-2 font-serif">测测你的心电图判读水平</h3>
+            <p className="text-sm text-[#6B7F96] dark:text-slate-400 mb-4">5 分钟快速测验 · 覆盖正常 ECG、心梗、心律失常、电解质异常、起搏器 · 即时评分解析</p>
+          </div>
+          <Link href={ROUTES.QUIZ} className="shrink-0 px-6 py-3 bg-[#2D8C6A] dark:bg-emerald-600 text-white font-medium rounded-lg hover:bg-[#1A6B4F] dark:hover:bg-emerald-500 transition-colors text-center whitespace-nowrap">
+            开始测验 →
+          </Link>
         </div>
       </section>
 
@@ -175,21 +210,21 @@ export default function Home() {
                 <h2 className="text-3xl font-bold text-[#1A2332] dark:text-slate-100 mb-2 font-serif">精选病例预览</h2>
                 <p className="text-[#6B7F96] dark:text-slate-400">AI 导师带你逐帧解析经典心电图</p>
               </div>
-              <Link href={ROUTES.CASES} className="text-[#1B4F8A] dark:text-blue-400 hover:text-[#154070] dark:hover:text-blue-300 text-sm font-medium hidden sm:block">查看全部 →</Link>
+              <Link href={ROUTES.CASES} className="text-[#2D8C6A] dark:text-emerald-400 hover:text-[#1A6B4F] dark:hover:text-emerald-300 text-sm font-medium hidden sm:block">查看全部 →</Link>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {featuredCases.map((c) => (
                 <Link key={c.id || c.title} href={ROUTES.CASE_DETAIL(c.id || "")} className="card group flex flex-col">
                   <CaseCardThumb category={c.category || "SVT"} />
                   <span className={`badge-category ${diffBadge[c.difficulty] || diffBadge["基础"]} mb-2`}>{c.difficulty}</span>
-                  <h3 className="font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#1B4F8A] dark:group-hover:text-blue-400 font-serif line-clamp-1">{c.title}</h3>
+                  <h3 className="font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 font-serif line-clamp-1">{c.title}</h3>
                   <p className="text-sm text-[#6B7F96] dark:text-slate-400 line-clamp-2 mb-4 flex-1">{c.description}</p>
-                  <span className="text-sm text-[#1B4F8A] dark:text-blue-400 font-medium group-hover:underline">AI 导师带你分析 →</span>
+                  <span className="text-sm text-[#2D8C6A] dark:text-emerald-400 font-medium group-hover:underline">AI 导师带你分析 →</span>
                 </Link>
               ))}
             </div>
             <div className="text-center mt-8 sm:hidden">
-              <Link href={ROUTES.CASES} className="text-[#1B4F8A] dark:text-blue-400 text-sm">查看全部病例 →</Link>
+              <Link href={ROUTES.CASES} className="text-[#2D8C6A] dark:text-emerald-400 text-sm">查看全部病例 →</Link>
             </div>
           </div>
         </section>
@@ -199,19 +234,19 @@ export default function Home() {
       <section className="bg-white dark:bg-slate-900 border-y border-[#E8ECF0] dark:border-slate-700 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {[{ num: allCasesCount || "", label: "教学病例" }, { num: "免费", label: "基础心电图" }, { num: "AI 驱动", label: "教学引擎" }, { num: "微信端", label: "随时随地" }].map((s) => (
-              <div key={s.label}><div className="text-3xl font-extrabold text-[#1B4F8A] dark:text-blue-400 mb-1 font-serif">{s.num}</div><div className="text-sm text-[#6B7F96] dark:text-slate-400">{s.label}</div></div>
+            {[{ num: totalCount || "", label: "教学病例" }, { num: "免费", label: "基础入门" }, { num: "AI 驱动", label: "教学引擎" }, { num: "Web 端", label: "随时学习" }].map((s) => (
+              <div key={s.label}><div className="text-3xl font-extrabold text-[#2D8C6A] dark:text-emerald-400 mb-1 font-serif">{s.num}</div><div className="text-sm text-[#6B7F96] dark:text-slate-400">{s.label}</div></div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ═══ Bottom CTA ═══ */}
-      <section className="bg-[#1B4F8A] dark:bg-blue-600 py-16">
+      <section className="bg-[#2D8C6A] dark:bg-emerald-600 py-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4 font-serif">每天 10 分钟，学会判读心电图</h2>
           <p className="text-white/80 mb-8 text-lg">基础内容永久免费。随时随地打开，AI 老师陪练。</p>
-          <Link href={ROUTES.AUTH_REGISTER} className="inline-block bg-white dark:bg-slate-100 text-[#1B4F8A] dark:text-blue-700 hover:bg-gray-100 dark:hover:bg-slate-200 font-bold py-3 px-10 rounded-lg transition-colors text-lg">
+          <Link href={ROUTES.AUTH_REGISTER} className="inline-block bg-white dark:bg-slate-100 text-[#2D8C6A] dark:text-emerald-700 hover:bg-gray-100 dark:hover:bg-slate-200 font-bold py-3 px-10 rounded-lg transition-colors text-lg">
             免费开始 →
           </Link>
         </div>

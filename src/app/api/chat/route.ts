@@ -199,6 +199,42 @@ ${buildCaseContext(caseContext)}
   return prompt;
 }
 
+function buildFigureIntroPrompt(
+  caseContext: Record<string, unknown>,
+  currentFigure: Record<string, unknown>,
+  figureIndex: number,
+  figureTotal: number
+): string {
+  return `# Role
+你是一位资深心内科主任医师，正在带学员逐步判读心电图病例。
+
+# 任务
+学员刚刚切换到本病例的第 ${figureIndex + 1}/${figureTotal} 步。
+请给出针对**当前这一步**的苏格拉底式教学开场（120-200 字）。
+
+# 要求
+1. 结合病例整体信息和当前步骤，引导学员按 ECG 判读框架观察（节律/间期/电轴/ST-T 等）
+2. 不要重复之前已经讨论过的内容（参考对话历史）
+3. 不要直接给出诊断或答案
+4. 必须以开放式问题结尾（不能只用是/否回答）
+5. 保留关键英文术语（STEMI, LBBB, QTc, AV block 等）
+6. 语气像带教老师：专业、简洁
+
+# 病例信息
+${buildCaseContext(caseContext)}
+
+# 当前步骤
+- 编号/步骤：${currentFigure.figure_number || ""}
+- 标题：${currentFigure.title || ""}
+- 描述：${currentFigure.description || "（暂无文字描述，请结合病例上下文推断本步可能展示的内容）"}
+- 教学要点：${currentFigure.teaching_points || ""}
+${currentFigure.key_question && !String(currentFigure.key_question).includes("你在这")
+  ? `- 参考引导问题：${currentFigure.key_question}`
+  : ""}
+
+直接输出开场白文本，不要 JSON，不要 markdown 标题。`;
+}
+
 // ── Helper: get Supabase client ────────────────────────────────────────
 
 function getSupabase(cookieHeader: string) {
@@ -283,6 +319,9 @@ export async function POST(request: NextRequest) {
       caseId,
       stream = false,
       currentFigure,
+      figureIntro = false,
+      figureIndex = 0,
+      figureTotal = 1,
     } = await request.json();
 
     if (!process.env.DEEPSEEK_API_KEY) {
@@ -304,7 +343,9 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
     const userId = user?.id || null;
 
-    const quota = await checkAndIncrementQuota(userId, ip, cookieHeader);
+    const quota = figureIntro
+      ? { allowed: true, remaining: 999, total: 999 }
+      : await checkAndIncrementQuota(userId, ip, cookieHeader);
     if (!quota.allowed) {
       return NextResponse.json(
         { error: `今日对话次数已达上限（${quota.total}次），请明天再来`, quota },
@@ -318,6 +359,51 @@ export async function POST(request: NextRequest) {
         content: m.content,
       })
     );
+
+    // ── Figure intro: streaming plain text, no quota ─────────────────
+    if (figureIntro && stream && currentFigure) {
+      const streamResponse = await deepseek.chat.completions.create({
+        model: DEEPSEEK_MODEL,
+        max_tokens: 600,
+        temperature: 0.7,
+        stream: true,
+        messages: [
+          {
+            role: "system",
+            content: buildFigureIntroPrompt(
+              caseContext,
+              currentFigure,
+              figureIndex,
+              figureTotal
+            ),
+          },
+          ...conversationMessages.slice(-6),
+          {
+            role: "user",
+            content: "请给出这一步的苏格拉底式教学开场。",
+          },
+        ],
+      });
+
+      const encoder = new TextEncoder();
+      const readable = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of streamResponse) {
+              const delta = chunk.choices[0]?.delta?.content;
+              if (delta) controller.enqueue(encoder.encode(delta));
+            }
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        },
+      });
+
+      return new Response(readable, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
 
     // ── Streaming mode ─────────────────────────────────────────────────
     if (stream) {

@@ -116,11 +116,11 @@ export default function AIConsultPage() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-full bg-[#1B4F8A] dark:bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">📈</div>
+                  <div className="w-7 h-7 rounded-full bg-[#2D8C6A] dark:bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">📈</div>
                 )}
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-[#1B4F8A] dark:bg-blue-600 text-white rounded-br-md"
+                    ? "bg-[#2D8C6A] dark:bg-emerald-600 text-white rounded-br-md"
                     : "bg-[#F5F8FC] dark:bg-slate-800 text-[#3D5166] dark:text-slate-300 rounded-bl-md border border-[#DDE5EE] dark:border-slate-700"
                 }`}>
                   <Markdown text={msg.content} />
@@ -132,16 +132,16 @@ export default function AIConsultPage() {
             ))}
             {streamingText !== null && (
               <div className="flex gap-2 justify-start">
-                <div className="w-7 h-7 rounded-full bg-[#1B4F8A] dark:bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">📈</div>
+                <div className="w-7 h-7 rounded-full bg-[#2D8C6A] dark:bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">📈</div>
                 <div className="bg-[#F5F8FC] dark:bg-slate-800 border border-[#DDE5EE] dark:border-slate-700 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed text-[#3D5166] dark:text-slate-300 max-w-[80%]">
                   <Markdown text={streamingText} />
-                  <span className="inline-block w-1.5 h-4 bg-[#1B4F8A] dark:bg-blue-400 ml-0.5 animate-pulse align-middle" />
+                  <span className="inline-block w-1.5 h-4 bg-[#2D8C6A] dark:bg-emerald-400 ml-0.5 animate-pulse align-middle" />
                 </div>
               </div>
             )}
             {sending && streamingText === null && (
               <div className="flex gap-2 justify-start">
-                <div className="w-7 h-7 rounded-full bg-[#1B4F8A] dark:bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">📈</div>
+                <div className="w-7 h-7 rounded-full bg-[#2D8C6A] dark:bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shrink-0">📈</div>
                 <div className="bg-[#F5F8FC] dark:bg-slate-800 border border-[#DDE5EE] dark:border-slate-700 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#8FA0B4] dark:bg-slate-500 animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-2 h-2 rounded-full bg-[#8FA0B4] dark:bg-slate-500 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -159,9 +159,9 @@ export default function AIConsultPage() {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !isComposing) { e.preventDefault(); handleSend(); } }}
               placeholder="输入你的心电图问题...（Enter 发送，Shift+Enter 换行）"
               rows={3} disabled={sending}
-              className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-[#C5D3E0] dark:border-slate-600 rounded-lg text-sm text-[#1A2332] dark:text-slate-100 placeholder-[#8FA0B4] dark:placeholder-slate-500 focus:outline-none focus:border-[#1B4F8A] dark:focus:border-blue-400 resize-none"
+              className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-[#C5D3E0] dark:border-slate-600 rounded-lg text-sm text-[#1A2332] dark:text-slate-100 placeholder-[#8FA0B4] dark:placeholder-slate-500 focus:outline-none focus:border-[#2D8C6A] dark:focus:border-emerald-400 resize-none"
             />
-            <button onClick={handleSend} disabled={sending || !input.trim()} className="self-end px-5 py-2 bg-[#1B4F8A] dark:bg-blue-600 text-white font-medium rounded-lg hover:bg-[#154070] dark:hover:bg-blue-500 transition-colors disabled:opacity-50 text-sm">
+            <button onClick={handleSend} disabled={sending || !input.trim()} className="self-end px-5 py-2 bg-[#2D8C6A] dark:bg-emerald-600 text-white font-medium rounded-lg hover:bg-[#1A6B4F] dark:hover:bg-emerald-500 transition-colors disabled:opacity-50 text-sm">
               发送
             </button>
           </div>

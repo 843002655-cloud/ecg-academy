@@ -6,6 +6,7 @@ export type CaseInput = Omit<Case, "id" | "created_at">;
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
+    cache: "no-store",
     headers: { "Content-Type": "application/json" },
     ...options,
   });
@@ -15,11 +16,12 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export const caseService = {
-  async getCases(filters?: { category?: string; difficulty?: string; product?: string }) {
+  async getCases(filters?: { category?: string; difficulty?: string; product?: string; tier?: number }) {
     const params = new URLSearchParams();
     if (filters?.category) params.set("category", filters.category);
     if (filters?.difficulty) params.set("difficulty", filters.difficulty);
     if (filters?.product) params.set("product", filters.product);
+    if (filters?.tier) params.set("tier", String(filters.tier));
     const data = await request<{ cases: Case[]; learnerCounts?: Record<string, number> }>(`${ROUTES.API_CASES}?${params.toString()}`);
     return { cases: data.cases, learnerCounts: data.learnerCounts || {} };
   },

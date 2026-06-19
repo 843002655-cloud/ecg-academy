@@ -8,6 +8,7 @@ import { SkeletonPage } from "@/components/Skeleton";
 import CaseCardThumb from "@/components/CaseCardThumb";
 import EmptyState from "@/components/EmptyState";
 import { ROUTES } from "@/lib/routes";
+import { catColors, diffColors, CATEGORIES, DIFFICULTIES } from "@/lib/constants";
 import { usePageTitle } from "@/lib/hooks/usePageTitle";
 
 interface Case {
@@ -17,46 +18,6 @@ interface Case {
   content_json?: Record<string, unknown>;
 }
 
-const categories = [
-  { value: "", label: "全部" },
-  { value: "正常心电图", label: "正常心电图" },
-  { value: "心腔肥大", label: "心腔肥大" },
-  { value: "束支阻滞", label: "束支阻滞" },
-  { value: "心肌缺血", label: "心肌缺血" },
-  { value: "ST-T改变", label: "ST-T改变" },
-  { value: "电解质异常", label: "电解质" },
-  { value: "心律失常", label: "心律失常" },
-  { value: "起搏器", label: "起搏器" },
-  { value: "急诊", label: "急诊" },
-];
-
-const difficulties = [
-  { value: "", label: "全部难度" },
-  { value: "基础", label: "基础" },
-  { value: "进阶", label: "进阶" },
-  { value: "高级", label: "高级" },
-];
-
-const catColors: Record<string, string> = {
-  "正常心电图": "bg-[#E8F4F0] text-[#0F6E56] dark:bg-emerald-900/30 dark:text-emerald-300",
-  "心腔肥大": "bg-[#FDE8E8] text-[#9B2C2C] dark:bg-red-900/30 dark:text-red-300",
-  "束支阻滞": "bg-[#EBF2FA] text-[#1B4F8A] dark:bg-blue-900/30 dark:text-blue-300",
-  "心肌缺血": "bg-[#FDE8E8] text-[#B91C1C] dark:bg-red-900/30 dark:text-red-300",
-  "ST-T改变": "bg-[#FEF3E2] text-[#854F0B] dark:bg-amber-900/30 dark:text-amber-300",
-  "电解质异常": "bg-[#EDE9FE] text-[#5B21B6] dark:bg-purple-900/30 dark:text-purple-300",
-  "心律失常": "bg-[#FEF3E2] text-[#B45309] dark:bg-amber-900/30 dark:text-amber-300",
-  "起搏器": "bg-[#E8F4F0] text-[#065F46] dark:bg-emerald-900/30 dark:text-emerald-300",
-  "急诊": "bg-[#FDE8E8] text-[#991B1B] dark:bg-red-900/30 dark:text-red-300",
-  SVT: "bg-[#EBF2FA] text-[#1B4F8A] dark:bg-blue-900/30 dark:text-blue-300",
-  VT: "bg-[#FDE8E8] text-[#9B2C2C] dark:bg-red-900/30 dark:text-red-300",
-  AF: "bg-[#FEF3E2] text-[#854F0B] dark:bg-amber-900/30 dark:text-amber-300",
-};
-
-const diffColors: Record<string, string> = {
-  "基础": "bg-[#E8F4F0] text-[#0F6E56] dark:bg-emerald-900/30 dark:text-emerald-300",
-  "进阶": "bg-[#FEF3E2] text-[#854F0B] dark:bg-amber-900/30 dark:text-amber-300",
-  "高级": "bg-[#FDE8E8] text-[#9B2C2C] dark:bg-red-900/30 dark:text-red-300",
-};
 
 function keywordMatch(c: Case, kw: string): boolean {
   if (!kw) return true;
@@ -69,7 +30,7 @@ function keywordMatch(c: Case, kw: string): boolean {
 }
 
 const FilterBtn = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
-  <button onClick={onClick} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap shrink-0 ${active ? "bg-[#1B4F8A] dark:bg-blue-600 text-white border-[#1B4F8A] dark:border-blue-600" : "bg-white dark:bg-slate-800 text-[#4B6080] dark:text-slate-300 border-[#C5D3E0] dark:border-slate-600 hover:border-[#1B4F8A] dark:hover:border-blue-400 hover:text-[#1B4F8A] dark:hover:text-blue-400"}`}>{active && "✓ "}{children}</button>
+  <button onClick={onClick} className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors border whitespace-nowrap shrink-0 ${active ? "bg-[#2D8C6A] dark:bg-emerald-600 text-white border-[#2D8C6A] dark:border-emerald-600" : "bg-white dark:bg-slate-800 text-[#4B6080] dark:text-slate-300 border-[#C5D3E0] dark:border-slate-600 hover:border-[#2D8C6A] dark:hover:border-emerald-400 hover:text-[#2D8C6A] dark:hover:text-emerald-300"}`}>{active && "✓ "}{children}</button>
 );
 
 function CaseList() {
@@ -80,14 +41,15 @@ function CaseList() {
   const [category, setCategory] = useState(searchParams?.get("category") ?? "");
   const [difficulty, setDifficulty] = useState("");
   const [keyword, setKeyword] = useState("");
+  const [tier, setTier] = useState(searchParams?.get("tier") ?? "");
 
   useEffect(() => {
-    caseService.getCases({ product: "ecg-academy" }).then(({ cases, learnerCounts: lc }) => {
+    caseService.getCases({ product: "ecg-academy", tier: tier ? parseInt(tier) : undefined }).then(({ cases, learnerCounts: lc }) => {
       setAllCases(cases);
       setLearnerCounts(lc);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, []);
+  }, [tier]);
 
   const totalCount = allCases.length;
   const catCounts: Record<string, number> = {};
@@ -125,22 +87,28 @@ function CaseList() {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="搜索病例标题、关键词..."
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-[#C5D3E0] dark:border-slate-600 rounded-lg text-sm text-[#1A2332] dark:text-slate-100 placeholder-[#8FA0B4] dark:placeholder-slate-500 focus:outline-none focus:border-[#1B4F8A] dark:focus:border-blue-400 transition-colors"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-[#C5D3E0] dark:border-slate-600 rounded-lg text-sm text-[#1A2332] dark:text-slate-100 placeholder-[#8FA0B4] dark:placeholder-slate-500 focus:outline-none focus:border-[#2D8C6A] dark:focus:border-emerald-400 transition-colors"
             />
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#8FA0B4]">🔍</span>
           </div>
 
           {/* Category filters */}
           <div className="flex gap-2 overflow-x-auto pb-1 flex-nowrap sm:flex-wrap">
-            {categories.map((c) => (
+            {CATEGORIES.map((c) => (
               <FilterBtn key={c.value} active={category === c.value} onClick={() => setCategory(c.value)}>
                 {c.label} ({getCatCount(c.value)})
               </FilterBtn>
             ))}
             <div className="w-px bg-[#E8ECF0] dark:bg-slate-700 mx-1 h-6 shrink-0 self-center hidden sm:block" />
-            {difficulties.map((d) => (
+            {DIFFICULTIES.map((d) => (
               <FilterBtn key={d.value} active={difficulty === d.value} onClick={() => setDifficulty(d.value)}>
                 {d.label}
+              </FilterBtn>
+            ))}
+            <div className="w-px bg-[#E8ECF0] dark:bg-slate-700 mx-1 h-6 shrink-0 self-center hidden sm:block" />
+            {[{ value: "", label: "全部阶段" }, { value: "1", label: "基础入门" }, { value: "2", label: "临床判读" }, { value: "3", label: "精进提升" }].map((t) => (
+              <FilterBtn key={t.value} active={tier === t.value} onClick={() => setTier(t.value)}>
+                {t.label}
               </FilterBtn>
             ))}
           </div>
@@ -166,7 +134,7 @@ function CaseList() {
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${catColors[c.category] || catColors.SVT}`}>{c.category}</span>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${diffColors[c.difficulty] || ""}`}>{c.difficulty}</span>
                   </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-[#1A2332] dark:text-slate-100 mb-2 font-serif group-hover:text-[#1B4F8A] dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-[#1A2332] dark:text-slate-100 mb-2 font-serif group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
                     {c.title}
                   </h3>
                   <p className="text-sm text-[#6B7F96] dark:text-slate-400 mb-2" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
@@ -184,7 +152,7 @@ function CaseList() {
                   </div>
                 </div>
 
-                <span className="block w-full text-center py-2.5 rounded-[10px] text-white text-sm font-medium bg-[#1B4F8A] dark:bg-blue-600 group-hover:bg-[#154070] dark:group-hover:bg-blue-500 transition-all duration-200">
+                <span className="block w-full text-center py-2.5 rounded-[10px] text-white text-sm font-medium bg-[#2D8C6A] dark:bg-emerald-600 group-hover:bg-[#1A6B4F] dark:group-hover:bg-emerald-500 transition-all duration-200">
                   AI 导师带你分析 →
                 </span>
               </div>

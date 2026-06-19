@@ -3,7 +3,12 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { caseSchema, formatZodErrors } from "@/lib/validators";
-import { getDisplayCategory } from "@/lib/case-utils";
+import { fetchLearnerCounts } from "@/lib/learner-stats";
+function getDisplayCategory(c: Record<string, unknown> | null | undefined): string {
+  if (!c) return "SVT";
+  const contentJson = c.content_json as Record<string, unknown> | undefined;
+  return (contentJson?.display_category as string) || (c.category as string) || "SVT";
+}
 
 const PRODUCT = "ecg-academy";
 
@@ -17,6 +22,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const difficulty = searchParams.get("difficulty");
+  const tier = searchParams.get("tier");
   const admin = await isAdmin(request.headers.get("cookie") || "");
 
   let query = supabaseAdmin
@@ -29,40 +35,17 @@ export async function GET(request: NextRequest) {
   // 真实分类存在 content_json.display_category，DB category 列固定为 SVT
   if (category) query = query.eq("content_json->>display_category", category);
   if (difficulty) query = query.eq("difficulty", difficulty);
+  if (tier) query = query.eq("tier", parseInt(tier));
 
   const { data } = await query;
 
-  // 去重 + 替换 category 为真实 display_category
-  const seen = new Map<string, unknown>();
-  if (data) {
-    for (const row of data as Record<string, unknown>[]) {
-      const key = row.title as string;
-      if (!seen.has(key) || new Date(row.created_at as string) < new Date((seen.get(key) as Record<string, unknown>)?.created_at as string)) {
-        // 用 display_category 替换 category 返回给前端
-        (row as Record<string, unknown>).category = getDisplayCategory(row);
-        seen.set(key, row);
-      }
-    }
-  }
-
-  const result = Array.from(seen.values());
+  // 替换 category 为真实 display_category
+  const result = (data || []).map((row) => {
+    (row as Record<string, unknown>).category = getDisplayCategory(row);
+    return row;
+  });
   const caseIds = result.map((r) => (r as Record<string, unknown>).id as string);
-
-  // 统计每个病例的学习人数
-  let learnerCounts: Record<string, number> = {};
-  if (caseIds.length > 0) {
-    const { data: progressData } = await supabaseAdmin
-      .from("user_progress")
-      .select("case_id")
-      .in("case_id", caseIds);
-
-    if (progressData) {
-      for (const row of progressData) {
-        const cid = row.case_id as string;
-        learnerCounts[cid] = (learnerCounts[cid] || 0) + 1;
-      }
-    }
-  }
+  const learnerCounts = await fetchLearnerCounts(supabaseAdmin, caseIds);
 
   return NextResponse.json({ cases: result, learnerCounts });
 }

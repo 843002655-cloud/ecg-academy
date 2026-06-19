@@ -1,4 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
+import { getAdminEmailFromCookieHeader } from "@/lib/admin-session";
+import { isAdminEmail } from "@/lib/supabase-route";
+
+function safeDecodeCookieValue(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
 /** 从 cookie 获取服务端 Supabase 客户端 */
 export function getServerSupabase(cookieHeader: string) {
@@ -8,9 +18,10 @@ export function getServerSupabase(cookieHeader: string) {
     {
       cookies: {
         getAll() {
+          if (!cookieHeader) return [];
           return cookieHeader.split("; ").map((c) => {
             const [name, ...rest] = c.split("=");
-            return { name, value: rest.join("=") };
+            return { name, value: safeDecodeCookieValue(rest.join("=")) };
           });
         },
         setAll() {},
@@ -21,10 +32,10 @@ export function getServerSupabase(cookieHeader: string) {
 
 /** 检查当前请求的用户是否为管理员 */
 export async function isAdmin(cookieHeader: string): Promise<boolean> {
+  if (getAdminEmailFromCookieHeader(cookieHeader)) return true;
   const supabase = getServerSupabase(cookieHeader);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  return user.email === process.env.ADMIN_EMAIL;
+  return isAdminEmail(user?.email);
 }
 
 /** 获取当前用户 ID，未登录返回 null */

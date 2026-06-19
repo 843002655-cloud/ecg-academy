@@ -32,7 +32,7 @@ export default function Typewriter({ texts, speed = 40, pause = 2000, className 
       {!allComplete && (
         <div className="mb-1">
           {currentText}
-          <span className="inline-block w-1.5 h-4 bg-[#1B4F8A] dark:bg-blue-400 ml-0.5 animate-pulse" />
+          <span className="inline-block w-1.5 h-4 bg-[#2D8C6A] dark:bg-emerald-400 ml-0.5 animate-pulse" />
         </div>
       )}
     </div>

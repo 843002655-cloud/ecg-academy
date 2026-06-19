@@ -23,6 +23,17 @@ export const progressService = {
     const data = await request<{ progress: ProgressItem[]; totalCases: number }>(ROUTES.API_PROGRESS);
     return data;
   },
+  async markCaseComplete(caseId: string, anonymousId: string) {
+    const res = await fetch(ROUTES.API_PROGRESS_COMPLETE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caseId, anonymousId }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as { error?: string }).error || "记录学习失败");
+    }
+  },
   isCompleted(progress: ProgressItem[], caseId: string): boolean {
     return progress.some((p) => p.case_id === caseId);
   },
