@@ -11,13 +11,32 @@ const PLAN_DURATION_DAYS: Record<MembershipPlan, number> = {
 
 export async function findUserIdByEmail(email: string): Promise<string | null> {
   const normalized = email.trim().toLowerCase();
-  const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (error) {
-    console.error("findUserIdByEmail:", error.message);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) return null;
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(normalized)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${serviceKey}`,
+          apikey: serviceKey,
+        },
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) {
+      console.error("findUserIdByEmail:", res.status, await res.text());
+      return null;
+    }
+    const data = (await res.json()) as { users?: Array<{ id: string; email?: string }> };
+    const user = data.users?.find((u) => u.email?.toLowerCase() === normalized);
+    return user?.id ?? null;
+  } catch (err) {
+    console.error("findUserIdByEmail:", err);
     return null;
   }
-  const user = data.users.find((u) => u.email?.toLowerCase() === normalized);
-  return user?.id ?? null;
 }
 
 export async function activateMembership(input: {

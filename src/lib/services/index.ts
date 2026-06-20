@@ -4,6 +4,8 @@ export type { LoginMethod, LoginCredentials } from "./authService";
 export { chatService } from "./chatService";
 export { progressService } from "./progressService";
 export { quizService } from "./quizService";
+export { profileService } from "./profileService";
+export type { UserProfile } from "./profileService";
 export type { Message, CaseContext } from "./chatService";
 export type { ProgressItem } from "./progressService";
 export type { CaseInput } from "./caseService";

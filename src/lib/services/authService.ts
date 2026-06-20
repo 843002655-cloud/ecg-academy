@@ -2,6 +2,7 @@
 import { getSupabase } from "@/lib/supabase";
 import storage from "@/lib/storage";
 import { isBrowser } from "@/lib/browser";
+import { getSupabaseAuthStorageKey } from "@/lib/supabase-auth-storage";
 
 export type LoginMethod = "email" | "wechat" | "phone";
 
@@ -19,7 +20,7 @@ async function emailLogin(email: string, password: string) {
   return data;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// WeChat login reserved for mini-program integration
 async function wechatLogin(code: string) {
   const res = await fetch("/api/wechat/login", {
     method: "POST",
@@ -65,7 +66,9 @@ export const authService = {
 
   _getToken(): Record<string, unknown> | null {
     if (!isBrowser()) return null;
-    return storage.getJSON<Record<string, unknown>>("sb-kqoigeigwucvlpzbvboy-auth-token");
+    const key = getSupabaseAuthStorageKey();
+    if (!key) return null;
+    return storage.getJSON<Record<string, unknown>>(key);
   },
 
   isLoggedIn(): boolean {

@@ -29,6 +29,7 @@ export const ROUTES = {
   API_PROGRESS_COMPLETE: "/api/progress/complete",
   API_QUIZ_QUESTIONS: "/api/quiz-questions",
   API_QUIZ_QUESTION: (id: string) => `/api/quiz-questions/${id}`,
+  API_PROFILE: "/api/profile",
   API_WECHAT_LOGIN: "/api/wechat/login",
   API_GENERATE_BOOK_CASE: "/api/generate-book-case",
   API_MEMBERSHIP_ACTIVATE: "/api/membership/activate",

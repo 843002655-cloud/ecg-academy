@@ -14,11 +14,11 @@ import argparse
 from pathlib import Path
 from openai import OpenAI
 
-# ── 配置 ────────────────────────────────────────────
-PDF_PATH = "I:/2024新书/150 ECG Cases 5th Edition by John Hampton.pdf"
-MAP_PATH = "I:/2024新书/case_page_map.json"
-IMG_DIR = Path("I:/2024新书/ecg_images")
-JSON_DIR = Path("I:/2024新书/ecg_cases")
+# ── 配置（可通过环境变量覆盖）────────────────────────────
+PDF_PATH = os.environ.get("ECG_PDF_PATH", "I:/2024新书/150 ECG Cases 5th Edition by John Hampton.pdf")
+MAP_PATH = os.environ.get("ECG_CASE_MAP_PATH", "I:/2024新书/case_page_map.json")
+IMG_DIR = Path(os.environ.get("ECG_IMAGES_DIR", "I:/2024新书/ecg_images"))
+JSON_DIR = Path(os.environ.get("ECG_CASES_DIR", "I:/2024新书/ecg_cases"))
 IMG_DIR.mkdir(parents=True, exist_ok=True)
 JSON_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { isAdmin } from "@/lib/api-utils";
 import { caseUpdateSchema, formatZodErrors } from "@/lib/validators";
+import { ECG_ACADEMY_PRODUCT, isEcgAcademyCase } from "@/lib/case-product";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,11 @@ export async function GET(
   try {
     const admin = await isAdmin(_request.headers.get("cookie") || "");
 
-    let query = supabaseAdmin.from("cases").select("*").eq("id", params.id);
+    let query = supabaseAdmin
+      .from("cases")
+      .select("*")
+      .eq("id", params.id)
+      .eq("content_json->>product", ECG_ACADEMY_PRODUCT);
 
     if (!admin) {
       query = query.eq("is_published", true);
@@ -28,6 +33,10 @@ export async function GET(
     const { data, error } = await query.single();
 
     if (error || !data) {
+      return NextResponse.json({ error: "案例不存在或未发布" }, { status: 404 });
+    }
+
+    if (!isEcgAcademyCase((data as Record<string, unknown>).content_json as Record<string, unknown>)) {
       return NextResponse.json({ error: "案例不存在或未发布" }, { status: 404 });
     }
 

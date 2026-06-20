@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
   }
 
   const safeRedirect = redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/";
+  const redirectParam = encodeURIComponent(safeRedirect);
   const response = NextResponse.redirect(appRedirect(request, safeRedirect), 302);
   const supabase = createSupabaseRouteClient(request, response);
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (createError && !createError.message.toLowerCase().includes("already")) {
-      return NextResponse.redirect(appRedirect(request, "/auth?error=register_failed"), 302);
+      return NextResponse.redirect(appRedirect(request, `/auth?error=register_failed&redirect=${redirectParam}`), 302);
     }
 
     if (created.user && !createError) {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (error || !data.session) {
-    return NextResponse.redirect(appRedirect(request, "/auth?error=register_failed"), 302);
+    return NextResponse.redirect(appRedirect(request, `/auth?error=register_failed&redirect=${redirectParam}`), 302);
   }
 
   return response;

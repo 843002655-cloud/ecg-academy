@@ -309,6 +309,24 @@ async function checkAndIncrementQuota(
   return { allowed: true, remaining: limit - newCount, total: limit };
 }
 
+async function trackAiChat(
+  userId: string,
+  caseId: string | undefined,
+  cookieHeader: string,
+  ip: string
+) {
+  const supabase = getSupabaseAdmin(cookieHeader);
+  const today = new Date().toISOString().split("T")[0];
+  await supabase.from("analytics_events").insert({
+    event_type: "ai_chat",
+    path: "/api/chat",
+    ip_address: ip,
+    user_id: userId,
+    session_id: `${userId}-${today}`,
+    metadata: { case_id: caseId || null },
+  });
+}
+
 // ── API ────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -434,6 +452,7 @@ export async function POST(request: NextRequest) {
                   { user_id: userId, case_id: caseId, completed_at: new Date().toISOString(), score: 0 },
                   { onConflict: "user_id,case_id" }
                 );
+              await trackAiChat(userId, caseId, cookieHeader, ip);
             }
           } catch (e) {
             console.error("Stream error:", e);
@@ -502,6 +521,7 @@ status 取值说明：
           { user_id: userId, case_id: caseId, completed_at: new Date().toISOString(), score: 0 },
           { onConflict: "user_id,case_id" }
         );
+      await trackAiChat(userId, caseId, cookieHeader, ip);
     }
 
     return NextResponse.json({ reply, status, hint, quota });
