@@ -1,4 +1,4 @@
-interface Props { category: string; }
+interface Props { category: string; ecgNumber?: number | null; }
 const ECG_POINTS = "0,40 20,40 30,40 35,8 40,40 45,40 55,40 65,40 70,32 75,40 80,40 90,40 100,40 105,12 110,40 115,40 125,40 135,40 140,32 145,40 150,40 160,40 170,40 175,8 180,40 185,40 195,40 205,40 210,20 215,40 220,40 230,40 240,40 245,12 250,40 255,40 265,40 275,40 280,32 285,40 300,40";
 const catStyles: Record<string, { bg: string; stroke: string; darkBg: string; darkStroke: string }> = {
   SVT: { bg: "#E8F5F0", stroke: "#2D8C6A", darkBg: "#1e3a5f", darkStroke: "#60a5fa" },
@@ -14,7 +14,7 @@ const catStyles: Record<string, { bg: string; stroke: string; darkBg: string; da
   "起搏器": { bg: "#E8F4F0", stroke: "#065F46", darkBg: "#0f2a24", darkStroke: "#34d399" },
   "急诊": { bg: "#FDE8E8", stroke: "#991B1B", darkBg: "#3b1212", darkStroke: "#f87171" },
 };
-export default function CaseCardThumb({ category }: Props) {
+export default function CaseCardThumb({ category, ecgNumber }: Props) {
   const s = catStyles[category] || catStyles.SVT;
   return (
     <div className="relative rounded-lg mb-4 h-28 flex items-center justify-center overflow-hidden select-none shrink-0">
@@ -32,6 +32,11 @@ export default function CaseCardThumb({ category }: Props) {
         <line x1="0" y1="60" x2="300" y2="60" stroke={s.darkStroke} strokeWidth="0.3" opacity="0.2" />
         <polyline fill="none" stroke={s.darkStroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" points={ECG_POINTS} />
       </svg>
+      {ecgNumber != null ? (
+        <span className="absolute top-2 left-2 z-10 text-xs font-bold font-mono px-2 py-0.5 rounded bg-black/50 text-white">
+          #{ecgNumber}
+        </span>
+      ) : null}
       <span className="relative z-10 text-sm font-bold font-mono tracking-wider opacity-70 dark:opacity-80 dark:hidden" style={{ color: s.stroke }}>{category}</span>
       <span className="relative z-10 text-sm font-bold font-mono tracking-wider opacity-80 hidden dark:inline" style={{ color: s.darkStroke }}>{category}</span>
     </div>

@@ -6,7 +6,9 @@ import AppLayout from "@/components/AppLayout";
 import { caseService } from "@/lib/services";
 import { SkeletonPage } from "@/components/Skeleton";
 import CaseCardThumb from "@/components/CaseCardThumb";
+import EcgCaseBadge from "@/components/EcgCaseBadge";
 import EmptyState from "@/components/EmptyState";
+import { getCaseTitleParts } from "@/lib/ecg-case-meta";
 import { ROUTES } from "@/lib/routes";
 import { catColors, diffColors, CATEGORIES, DIFFICULTIES } from "@/lib/constants";
 import { usePageTitle } from "@/lib/hooks/usePageTitle";
@@ -72,7 +74,7 @@ function CaseList() {
     <AppLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <h1 className="text-3xl font-bold text-[#1A2332] dark:text-slate-100 mb-2 font-serif">病例库</h1>
-        <p className="text-[#6B7F96] dark:text-slate-400 mb-3">从正常心电图到复杂心律失常，AI 导师逐导联带你判读</p>
+        <p className="text-[#6B7F96] dark:text-slate-400 mb-3">Hampton《150 ECG Cases》原书病例，按 ECG 编号 1→150 排列</p>
         <p className="text-xs text-[#8FA0B4] dark:text-slate-500 mb-4 flex flex-wrap items-center gap-x-4 gap-y-1">
           <span>📈 {totalCount} 精选病例</span><span className="text-[#C5D3E0] dark:text-slate-600">|</span>
           <span>🎯 覆盖 9 大分类</span><span className="text-[#C5D3E0] dark:text-slate-600">|</span>
@@ -120,22 +122,25 @@ function CaseList() {
           <EmptyState icon="🔍" title={keyword ? "未找到匹配的病例" : "暂无病例"} description={keyword ? "换个关键词试试？" : "病例库还没有内容，请稍后再来"} actionHref={keyword ? "" : ROUTES.CASES} actionLabel={keyword ? "" : "刷新页面"} />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((c) => (
+            {filtered.map((c) => {
+              const { ecgNumber, subtitle } = getCaseTitleParts(c.title, c.content_json);
+              return (
               <div
                 key={c.id} role="link" tabIndex={0}
                 onClick={() => router.push(ROUTES.CASE_DETAIL(c.id))}
                 onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.click(); }}
                 className="card group flex flex-col cursor-pointer"
               >
-                <CaseCardThumb category={c.category} />
+                <CaseCardThumb category={c.category} ecgNumber={ecgNumber} />
 
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <EcgCaseBadge number={ecgNumber} />
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${catColors[c.category] || catColors.SVT}`}>{c.category}</span>
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${diffColors[c.difficulty] || ""}`}>{c.difficulty}</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-[#1A2332] dark:text-slate-100 mb-2 font-serif group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    {c.title}
+                    {subtitle}
                   </h3>
                   <p className="text-sm text-[#6B7F96] dark:text-slate-400 mb-2" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     {c.description}
@@ -156,7 +161,7 @@ function CaseList() {
                   AI 导师带你分析 →
                 </span>
               </div>
-            ))}
+            );})}
           </div>
         )}
       </div>

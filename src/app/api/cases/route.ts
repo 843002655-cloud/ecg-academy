@@ -4,6 +4,7 @@ import { isAdmin } from "@/lib/api-utils";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { caseSchema, formatZodErrors } from "@/lib/validators";
 import { fetchLearnerCounts } from "@/lib/learner-stats";
+import { filterHamptonBookCases, sortCasesByEcgNumber } from "@/lib/ecg-case-meta";
 function getDisplayCategory(c: Record<string, unknown> | null | undefined): string {
   if (!c) return "SVT";
   const contentJson = c.content_json as Record<string, unknown> | undefined;
@@ -28,19 +29,18 @@ export async function GET(request: NextRequest) {
   let query = supabaseAdmin
     .from("cases")
     .select("*")
-    .eq("content_json->>product", PRODUCT)
-    .order("created_at", { ascending: false });
+    .eq("content_json->>product", PRODUCT);
 
   if (!admin) query = query.eq("is_published", true);
   // 真实分类存在 content_json.display_category，DB category 列固定为 SVT
-  if (category) query = query.eq("content_json->>display_category", category);
+  if (category) query = query.eq("category", category);
   if (difficulty) query = query.eq("difficulty", difficulty);
   if (tier) query = query.eq("tier", parseInt(tier));
 
   const { data } = await query;
 
   // 替换 category 为真实 display_category
-  const result = (data || []).map((row) => {
+  const result = sortCasesByEcgNumber(filterHamptonBookCases(data || [])).map((row) => {
     (row as Record<string, unknown>).category = getDisplayCategory(row);
     return row;
   });

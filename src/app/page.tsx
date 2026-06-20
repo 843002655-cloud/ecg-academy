@@ -5,7 +5,9 @@ import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
 import Typewriter from "@/components/Typewriter";
 import CaseCardThumb from "@/components/CaseCardThumb";
+import EcgCaseBadge from "@/components/EcgCaseBadge";
 import EcgBackground from "@/components/EcgBackground";
+import { getCaseTitleParts } from "@/lib/ecg-case-meta";
 import { ROUTES } from "@/lib/routes";
 import { caseService } from "@/lib/services";
 import { usePageTitle } from "@/lib/hooks/usePageTitle";
@@ -213,15 +215,20 @@ export default function Home() {
               <Link href={ROUTES.CASES} className="text-[#2D8C6A] dark:text-emerald-400 hover:text-[#1A6B4F] dark:hover:text-emerald-300 text-sm font-medium hidden sm:block">查看全部 →</Link>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {featuredCases.map((c) => (
+              {featuredCases.map((c) => {
+                const { ecgNumber, subtitle } = getCaseTitleParts(c.title, (c as { content_json?: Record<string, unknown> }).content_json);
+                return (
                 <Link key={c.id || c.title} href={ROUTES.CASE_DETAIL(c.id || "")} className="card group flex flex-col">
-                  <CaseCardThumb category={c.category || "SVT"} />
-                  <span className={`badge-category ${diffBadge[c.difficulty] || diffBadge["基础"]} mb-2`}>{c.difficulty}</span>
-                  <h3 className="font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 font-serif line-clamp-1">{c.title}</h3>
+                  <CaseCardThumb category={c.category || "SVT"} ecgNumber={ecgNumber} />
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <EcgCaseBadge number={ecgNumber} />
+                    <span className={`badge-category ${diffBadge[c.difficulty] || diffBadge["基础"]}`}>{c.difficulty}</span>
+                  </div>
+                  <h3 className="font-semibold text-[#1A2332] dark:text-slate-100 mb-2 group-hover:text-[#2D8C6A] dark:group-hover:text-emerald-400 font-serif line-clamp-2">{subtitle}</h3>
                   <p className="text-sm text-[#6B7F96] dark:text-slate-400 line-clamp-2 mb-4 flex-1">{c.description}</p>
                   <span className="text-sm text-[#2D8C6A] dark:text-emerald-400 font-medium group-hover:underline">AI 导师带你分析 →</span>
                 </Link>
-              ))}
+              );})}
             </div>
             <div className="text-center mt-8 sm:hidden">
               <Link href={ROUTES.CASES} className="text-[#2D8C6A] dark:text-emerald-400 text-sm">查看全部病例 →</Link>
