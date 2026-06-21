@@ -12,9 +12,9 @@ import argparse
 from pathlib import Path
 from supabase import create_client, Client
 
-# ── Supabase 配置 ──────────────────────────────────────
-SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "https://kqoigeigwucvlpzbvboy.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+from supabase_env import SUPABASE_KEY, SUPABASE_URL
+
+# ── Supabase 配置（来自 .env.local）──────────────────────
 SUPABASE_ANON_KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
 
 CASES_DIR = Path(os.environ.get("ECG_CASES_DIR", "I:/2024新书/ecg_cases"))

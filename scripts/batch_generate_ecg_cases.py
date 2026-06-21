@@ -14,6 +14,10 @@ import argparse
 from pathlib import Path
 from openai import OpenAI
 
+from env_local import load_env_local
+
+load_env_local()
+
 # ── 配置（可通过环境变量覆盖）────────────────────────────
 PDF_PATH = os.environ.get("ECG_PDF_PATH", "I:/2024新书/150 ECG Cases 5th Edition by John Hampton.pdf")
 MAP_PATH = os.environ.get("ECG_CASE_MAP_PATH", "I:/2024新书/case_page_map.json")

@@ -5,3 +5,15 @@ out/
 .env*.local
 *.tsbuildinfo
 next-env.d.ts
+
+# local deploy archives
+*.tar.gz
+*-deploy*.tar.gz
+ecg-academy-deploy.tar.gz
+
+# batch / large local artifacts
+/batch-output/
+/scripts/extracted_figures/
+
+# accidental server artifacts
+app.log
